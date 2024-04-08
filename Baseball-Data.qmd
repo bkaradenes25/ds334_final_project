@@ -1,0 +1,28 @@
+---
+title: "Final"
+author: "Brendan Karadenes"
+format:
+  html:
+    embed-resources: true
+---
+## Introduction
+
+For my final project I am working on using MLB data from the baseballr package.
+
+
+```{r}
+# Installing the package
+install.packages("baseballr")
+```
+
+```{r}
+library(baseballr)
+code_barrel(df)
+d <- retrosheet_data(years_to_acquire = 2020:2022)
+fg_id <- id$fangraphs_id
+
+fg_data_trout <-
+  fg_batter_game_logs(playerid = fg_id, year = 2022)
+```
+
+
