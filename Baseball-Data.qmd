@@ -7,23 +7,10 @@ format:
 ---
 ## Introduction
 
-For my final project I am working on using MLB data from the baseballr package and a baseball reference data set looking at first round draft picks.
+For my final project I am working on using MLB data from a baseball reference data set looking at first round draft picks. I'm interested in how signing bonus's have changed over the years, how players have panned out, and which positions are the most popular first round draft picks. The data is between 1965 and 2023.
 
 
-```{r}
-# Installing the package
-install.packages("baseballr")
-```
 
-```{r}
-library(baseballr)
-code_barrel(df)
-d <- retrosheet_data(years_to_acquire = 2020:2022)
-fg_id <- id$fangraphs_id
-
-fg_data_trout <-
-  fg_batter_game_logs(playerid = fg_id, year = 2022)
-```
 
 # Draft Data
 
@@ -31,7 +18,36 @@ fg_data_trout <-
 library(tidyverse)
 library(broom)
 library(readxl)
-my_data <- read_excel("ds334_final_project/Final-Data.xlsx", sheet = 2, col_names = TRUE)
+draft_data <- read_csv(here::here("Final-Data.csv"))
+```
+
+# Data Cleaning
+
+```{r}
+# Removing unecessary characters from Name variable
+draft_data <- draft_data %>%
+  mutate(
+    Name = str_replace_all(Name, pattern = "�\\(minors\\)", replacement = ""),     Name = str_replace_all(Name, pattern = "\\(minors\\)�", replacement = ""))
+```
+
+```{r}
+# Making signing bonus variable numeric 
+  draft_data <- draft_data %>%
+  mutate(Bonus = parse_number(Bonus))
+```
+
+```{r}
+library(shiny)
+
+ui <- fluidPage(
+  
+)
+
+server <- function(input, output, session) {
+  
+}
+
+shinyApp(ui, server)
 ```
 
 

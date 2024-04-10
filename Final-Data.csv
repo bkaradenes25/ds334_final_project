@@ -1,6 +1,6 @@
 Year,Rnd,DT,FrRnd,RdPck,Tm,Signed,Bonus,Name,Pos,WAR,G,AB,HR,BA,OPS,G,W,L,ERA,WHIP,SV,Type,Drafted Out of,Name-additional
-2023,1,,FrRnd,1,Pirates,Y,"$9,200,000 ",Paul Skenes (minors),P,,,,,,,,,,,,,4Yr,Louisiana State University (Baton Rouge LA),-9999
-2022,1,,FrRnd,1,Orioles,Y,"$8,190,000 ",Jackson Holliday (minors),SS,,,,,,,,,,,,,HS,Stillwater HS (Stillwater OK),-9999
+2023,1,,FrRnd,1,Pirates,Y,"$9,200,000 ",Paul Skenes (minors) ,P,,,,,,,,,,,,,4Yr,Louisiana State University (Baton Rouge LA),-9999
+2022,1,,FrRnd,1,Orioles,Y,"$8,190,000 ",Jackson Holliday (minors) ,SS,,,,,,,,,,,,,HS,Stillwater HS (Stillwater OK),-9999
 2021,1,,FrRnd,1,Pirates,Y,"$6,500,000 ",Henry Davis (minors),C,-1.5,72,257,7,0.206,0.635,,,,,,,4Yr,University of Louisville (Louisville KY),davishe01
 2020,1,,FrRnd,1,Tigers,Y,"$8,416,300 ",Spencer Torkelson (minors),3B,-0.9,280,1011,39,0.221,0.694,,,,,,,4Yr,Arizona State University (Tempe AZ),torkesp01
 2019,1,,FrRnd,1,Orioles,Y,"$8,100,000 ",Adley Rutschman (minors),C,9.9,277,1024,33,0.27,0.806,,,,,,,4Yr,Oregon State University (Corvallis OR),rutscad01
@@ -22,7 +22,7 @@ Year,Rnd,DT,FrRnd,RdPck,Tm,Signed,Bonus,Name,Pos,WAR,G,AB,HR,BA,OPS,G,W,L,ERA,WH
 2003,1,,FrRnd,1,Devil Rays,Y,"$3,700,000 ",Delmon Young (minors),OF,3.2,1118,4108,109,0.283,0.737,,,,,,,HS,Adolfo Camarillo HS (Camarillo CA),youngde03
 2002,1,,FrRnd,1,Pirates,Y,"$4,000,000 ",Bryan Bullington (minors),RHP,-0.2,6,3,0,0.333,0.667,26,1,9,5.62,1.58,0,4Yr,Ball State University (Muncie IN),bullibr01
 2001,1,,FrRnd,1,Twins,Y,"$5,150,000 ",Joe Mauer (minors),C,55.2,1858,6930,143,0.306,0.827,,,,,,,HS,Cretin HS (St. Paul MN),mauerjo01
-2000,1,,FrRnd,1,Marlins,Y,"$3,000,000 ",Adri?n Gonz?lez (minors),1B,43.5,1929,7139,317,0.287,0.843,,,,,,,HS,Eastlake HS (Chula Vista CA),gonzaad01
+2000,1,,FrRnd,1,Marlins,Y,"$3,000,000 ",Adrian Gonzalez (minors),1B,43.5,1929,7139,317,0.287,0.843,,,,,,,HS,Eastlake HS (Chula Vista CA),gonzaad01
 1999,1,,FrRnd,1,Devil Rays,Y,"$3,960,000 ",Josh Hamilton (minors),OF,28.2,1027,3909,200,0.29,0.865,,,,,,,HS,Athens Drive HS (Raleigh NC),hamiljo03
 1998,1,,FrRnd,1,Phillies,Y,"$3,150,000 ",Pat Burrell (minors),3B,18.9,1640,5503,292,0.253,0.834,,,,,,,4Yr,University of Miami (Coral Gables FL),burrepa01
 1997,1,,FrRnd,1,Tigers,Y,"$2,505,000 ",Matt Anderson (minors),RHP,-0.6,22,0,0,,,257,15,7,5.19,1.58,26,4Yr,Rice University (Houston TX),anderma01
