@@ -7,7 +7,7 @@ format:
 ---
 ## Introduction
 
-For my final project I am working on using MLB data from the baseballr package.
+For my final project I am working on using MLB data from the baseballr package and a baseball reference data set looking at first round draft picks.
 
 
 ```{r}
@@ -24,5 +24,16 @@ fg_id <- id$fangraphs_id
 fg_data_trout <-
   fg_batter_game_logs(playerid = fg_id, year = 2022)
 ```
+
+# Draft Data
+
+```{r}
+library(tidyverse)
+library(broom)
+library(readxl)
+my_data <- read_excel("ds334_final_project/Final-Data.xlsx", sheet = 2, col_names = TRUE)
+```
+
+
 
 
