@@ -7,38 +7,76 @@ format:
 ---
 ## Introduction
 
-For my final project I am working on using MLB data from the baseball r package. I'm interested in creating batting spray charts for each ball in play in the playoffs.
+For my final project I am working on using MLB data from the baseball r package. I'm interested in creating batting spray charts for each ball in play in the playoffs from 2019-2023.
 
 
 ```{r}
 library(baseballr)
 library(tidyverse)
-
-# Used guide on CMU website to scrape data
-
-mlb_batted_balls_2023 <- 
-  scrape_statcast_savant_batter_all(start_date = "2023-10-03",
-                                    end_date = "2023-10-10") %>%
-  filter(type == "X")
-
 ```
 
+## Scraping the data from the past 5 years
 ```{r}
-playoffs <- 
+playoffs_23 <- 
   scrape_statcast_savant_batter_all(start_date = "2023-10-03",
-                                    end_date = "2023-10-10") %>%
+                                    end_date = "2023-11-01") %>%
   filter(type == "X")
 ```
 
+```{r}
+playoffs_22 <- 
+  scrape_statcast_savant_batter_all(start_date = "2022-10-07",
+                                    end_date = "2022-11-05") %>%
+  filter(type == "X")
+```
 
 ```{r}
-choices <- mlb_batted_balls_2023 |> distinct(player_name) |> pull(player_name)
+playoffs_21 <- 
+  scrape_statcast_savant_batter_all(start_date = "2021-10-05",
+                                    end_date = "2021-11-02") %>%
+  filter(type == "X")
+```
+
+
+```{r}
+playoffs_20 <- 
+  scrape_statcast_savant_batter_all(start_date = "2020-09-29",
+                                    end_date = "2020-10-27") %>%
+  filter(type == "X")
+```
+
+```{r}
+playoffs_19 <- 
+  scrape_statcast_savant_batter_all(start_date = "2019-10-01",
+                                    end_date = "2019-10-30") %>%
+  filter(type == "X")
+```
+
+```{r}
+# Joining the data from last 5 years
+data1 <- full_join(playoffs_19, playoffs_20)
+data2 <- full_join(data1, playoffs_21)
+data3 <- full_join(data2, playoffs_22)
+batted_balls <- full_join(data3, playoffs_23)
+```
+
+```{r}
+# Saving scraped data as csv 
+write.csv(batted_balls, "batted_balls.csv", row.names = FALSE)
+```
+
+## Creating the shiny app
+```{r}
+choices <- batted_balls |> distinct(player_name) |> pull(player_name)
 library(shiny)
 ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
     selectInput("player_name", label = "Choose a Player",
-                choices = choices, selected = "Trout, Mike")
+                choices = choices, selected = "Trout, Mike"),
+    radioButtons("events", label = "Choose a Batted Ball Result",
+                 choices = c("single", "double", "triple", "home_run", "out"))
+    
   ),
   mainPanel(
     plotOutput("spray_chart")
@@ -48,8 +86,10 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   base_graph <- reactive({
-    mlb_batted_balls_2023 %>%
-      filter(player_name == input$player_name)
+    batted_balls %>%
+      mutate(events = case_when(events %in% c("single", "double", "triple", "home_run") ~ events, TRUE ~ "out")) %>%
+      filter(player_name == input$player_name,
+             events == input$events)
   })
   output$spray_chart <- renderPlot({
     filtered_data <- base_graph()
