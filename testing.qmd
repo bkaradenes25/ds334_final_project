@@ -1,0 +1,32 @@
+---
+title: "test"
+format: html
+---
+
+```{r}
+mlb_batted_balls_test2 <- 
+  scrape_statcast_savant_batter_all(start_date = "2022-04-01",
+                                    end_date = "2022-05-31")
+```
+
+```{r}
+mlb_batted_balls_test2 <- 
+  scrape_statcast_savant_batter_all(start_date = "2022-04-01",
+                                    end_date = "2022-05-31")
+```
+
+
+```{r}
+playoffs <- 
+  scrape_statcast_savant_batter_all(start_date = "2023-10-03",
+                                    end_date = "2023-11-01") %>%
+  filter(type == "X")
+```
+
+```{r}
+playoffs <- 
+  scrape_statcast_savant_batter_all(start_date = "2023-10-03",
+                                    end_date = "2023-11-01") %>%
+  filter(type == "X")
+```
+

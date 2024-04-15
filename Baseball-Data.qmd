@@ -7,49 +7,69 @@ format:
 ---
 ## Introduction
 
-For my final project I am working on using MLB data from a baseball reference data set looking at first round draft picks. I'm interested in how signing bonus's have changed over the years, how players have panned out, and which positions are the most popular first round draft picks. The data is between 1965 and 2023.
+For my final project I am working on using MLB data from the baseball r package. I'm interested in creating batting spray charts for each ball in play in the playoffs.
 
-
-
-
-# Draft Data
 
 ```{r}
+library(baseballr)
 library(tidyverse)
-library(broom)
-library(readxl)
-draft_data <- read_csv(here::here("Final-Data.csv"))
-```
 
-# Data Cleaning
+# Used guide on CMU website to scrape data
 
-```{r}
-# Removing unecessary characters from Name variable
-draft_data <- draft_data %>%
-  mutate(
-    Name = str_replace_all(Name, pattern = "�\\(minors\\)", replacement = ""),     Name = str_replace_all(Name, pattern = "\\(minors\\)�", replacement = ""))
+mlb_batted_balls_2023 <- 
+  scrape_statcast_savant_batter_all(start_date = "2023-10-03",
+                                    end_date = "2023-10-10") %>%
+  filter(type == "X")
+
 ```
 
 ```{r}
-# Making signing bonus variable numeric 
-  draft_data <- draft_data %>%
-  mutate(Bonus = parse_number(Bonus))
+playoffs <- 
+  scrape_statcast_savant_batter_all(start_date = "2023-10-03",
+                                    end_date = "2023-10-10") %>%
+  filter(type == "X")
 ```
 
+
 ```{r}
+choices <- mlb_batted_balls_2023 |> distinct(player_name) |> pull(player_name)
 library(shiny)
-
 ui <- fluidPage(
-  
+  sidebarLayout(
+    sidebarPanel(
+    selectInput("player_name", label = "Choose a Player",
+                choices = choices, selected = "Trout, Mike")
+  ),
+  mainPanel(
+    plotOutput("spray_chart")
+  )
+)
 )
 
 server <- function(input, output, session) {
-  
+  base_graph <- reactive({
+    mlb_batted_balls_2023 %>%
+      filter(player_name == input$player_name)
+  })
+  output$spray_chart <- renderPlot({
+    filtered_data <- base_graph()
+    ggspraychart(
+  data = filtered_data,
+  x_value = "hc_x",
+  y_value = "-hc_y",
+  fill_value = NULL,
+  fill_palette = NULL,
+  fill_legend_title = NULL,
+  density = FALSE,
+  bin_size = 15,
+  point_alpha = 0.75,
+  point_size = 2,
+  frame = NULL
+)
+  })
 }
 
 shinyApp(ui, server)
 ```
-
-
 
 
