@@ -63,6 +63,7 @@ batted_balls <- full_join(data3, playoffs_23)
 ```{r}
 # Saving scraped data as csv 
 write.csv(batted_balls, "batted_balls.csv", row.names = FALSE)
+batted_balls <- read.csv("batted_balls.csv")
 ```
 
 ## Creating the shiny app
@@ -73,11 +74,8 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
     selectInput("player_name", label = "Choose a Player",
-                choices = choices, selected = "Trout, Mike"),
-    radioButtons("events", label = "Choose a Batted Ball Result",
-                 choices = c("single", "double", "triple", "home_run", "out"))
-    
-  ),
+                choices = choices, selected = "Correa, Carlos")
+     ),
   mainPanel(
     plotOutput("spray_chart")
   )
@@ -87,9 +85,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   base_graph <- reactive({
     batted_balls %>%
-      mutate(events = case_when(events %in% c("single", "double", "triple", "home_run") ~ events, TRUE ~ "out")) %>%
-      filter(player_name == input$player_name,
-             events == input$events)
+      mutate(events = case_when(events %in% c("single", "double", "triple", "home_run") ~ events, TRUE ~ "out"))
   })
   output$spray_chart <- renderPlot({
     filtered_data <- base_graph()
@@ -97,9 +93,13 @@ server <- function(input, output, session) {
   data = filtered_data,
   x_value = "hc_x",
   y_value = "-hc_y",
-  fill_value = NULL,
-  fill_palette = NULL,
-  fill_legend_title = NULL,
+  fill_value = "events",
+  fill_palette = c("single" = "red",    
+  "double" = "blue",   
+  "triple" = "yellow",  
+  "home_run" = "purple",   
+  "out" = "black" ),
+  fill_legend_title = "Outcomes",
   density = FALSE,
   bin_size = 15,
   point_alpha = 0.75,
