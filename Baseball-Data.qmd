@@ -74,7 +74,7 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
     selectInput("player_name", label = "Choose a Player",
-                choices = choices, selected = "Correa, Carlos")
+                choices = choices, selected = NULL)
      ),
   mainPanel(
     plotOutput("spray_chart")
@@ -85,6 +85,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   base_graph <- reactive({
     batted_balls %>%
+      filter(player_name == input$player_name) %>%
       mutate(events = case_when(events %in% c("single", "double", "triple", "home_run") ~ events, TRUE ~ "out"))
   })
   output$spray_chart <- renderPlot({
