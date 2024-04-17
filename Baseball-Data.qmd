@@ -64,17 +64,22 @@ batted_balls <- full_join(data3, playoffs_23)
 # Saving scraped data as csv 
 write.csv(batted_balls, "batted_balls.csv", row.names = FALSE)
 batted_balls <- read.csv("batted_balls.csv")
+batted_balls <- batted_balls %>%
+  mutate(year = year(ymd(game_date)))
 ```
 
 ## Creating the shiny app
 ```{r}
+library(plotly)
 choices <- batted_balls |> distinct(player_name) |> pull(player_name)
 library(shiny)
 ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
     selectInput("player_name", label = "Choose a Player",
-                choices = choices, selected = NULL)
+                choices = choices, selected = NULL),
+    radioButtons("year", label = "Choose a Year",
+                 choices = c("2019", "2020", "2021", "2022", "2023"))
      ),
   mainPanel(
     plotOutput("spray_chart")
@@ -86,7 +91,7 @@ server <- function(input, output, session) {
   base_graph <- reactive({
     batted_balls %>%
       filter(player_name == input$player_name) %>%
-      mutate(events = case_when(events %in% c("single", "double", "triple", "home_run") ~ events, TRUE ~ "out"))
+      mutate(events = case_when(events %in% c("single", "double", "triple", "home_run") ~ events, TRUE ~ "out")) 
   })
   output$spray_chart <- renderPlot({
     filtered_data <- base_graph()
