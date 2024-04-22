@@ -70,7 +70,6 @@ batted_balls <- batted_balls %>%
 
 ## Creating the shiny app
 ```{r}
-library(plotly)
 choices <- batted_balls |> distinct(player_name) |> pull(player_name)
 library(shiny)
 ui <- fluidPage(
@@ -79,7 +78,7 @@ ui <- fluidPage(
     selectInput("player_name", label = "Choose a Player",
                 choices = choices, selected = NULL),
     radioButtons("year", label = "Choose a Year",
-                 choices = c("2019", "2020", "2021", "2022", "2023"))
+                 choices = c("All","2019", "2020", "2021", "2022", "2023"), selected = "All")
      ),
   mainPanel(
     plotOutput("spray_chart")
@@ -89,10 +88,17 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   base_graph <- reactive({
-    batted_balls %>%
-      filter(player_name == input$player_name) %>%
-      mutate(events = case_when(events %in% c("single", "double", "triple", "home_run") ~ events, TRUE ~ "out")) 
+    filtered_data <- batted_balls %>%
+      filter(player_name == input$player_name) 
+    
+    if(input$year != "All") {
+    filtered_data <- filtered_data %>%
+      filter(year == input$year)
+  }
+     filtered_data %>%
+       mutate(events = case_when(events %in% c("single", "double", "triple", "home_run") ~ events, TRUE ~ "out")) 
   })
+  
   output$spray_chart <- renderPlot({
     filtered_data <- base_graph()
     ggspraychart(
