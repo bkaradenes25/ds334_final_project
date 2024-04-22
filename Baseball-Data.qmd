@@ -9,13 +9,14 @@ format:
 
 For my final project I am working on using MLB data from the baseball r package. I'm interested in creating batting spray charts for each ball in play in the playoffs from 2019-2023.
 
-
+## Loading the Necessary Packages
 ```{r}
 library(baseballr)
 library(tidyverse)
+library(shiny)
 ```
 
-## Scraping the data from the past 5 years
+## Scraping playoff data from the past 5 years
 ```{r}
 playoffs_23 <- 
   scrape_statcast_savant_batter_all(start_date = "2023-10-03",
@@ -52,16 +53,16 @@ playoffs_19 <-
   filter(type == "X")
 ```
 
+## Joining the data
 ```{r}
-# Joining the data from last 5 years
 data1 <- full_join(playoffs_19, playoffs_20)
 data2 <- full_join(data1, playoffs_21)
 data3 <- full_join(data2, playoffs_22)
 batted_balls <- full_join(data3, playoffs_23)
 ```
 
+## Saving scraped data as csv 
 ```{r}
-# Saving scraped data as csv 
 write.csv(batted_balls, "batted_balls.csv", row.names = FALSE)
 batted_balls <- read.csv("batted_balls.csv")
 batted_balls <- batted_balls %>%
@@ -70,15 +71,15 @@ batted_balls <- batted_balls %>%
 
 ## Creating the shiny app
 ```{r}
+# Ensuring only 1 name for each player
 choices <- batted_balls |> distinct(player_name) |> pull(player_name)
-library(shiny)
 ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
     selectInput("player_name", label = "Choose a Player",
                 choices = choices, selected = NULL),
     radioButtons("year", label = "Choose a Year",
-                 choices = c("All","2019", "2020", "2021", "2022", "2023"), selected = "All")
+                 choices = "All", selected = "All")
      ),
   mainPanel(
     plotOutput("spray_chart")
@@ -87,6 +88,20 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
+  # Updating the radio buttons so only years that player put a ball in play show up
+  observeEvent(input$player_name,{
+    years <- batted_balls %>%
+      filter(player_name == input$player_name) %>%
+      distinct(year) %>%
+      pull(year)
+    updateRadioButtons(
+      session = session,
+      inputId = "year",
+      label = "Choose a Year",
+      choices = c("All", as.character(years)),
+      selected = "All"
+    )
+  })
   base_graph <- reactive({
     filtered_data <- batted_balls %>%
       filter(player_name == input$player_name) 
