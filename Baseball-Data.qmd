@@ -82,7 +82,10 @@ ui <- fluidPage(
                  choices = "All", selected = "All"),
     sliderInput("distance",
                 "Select Minimum Distance",
-                min = 0, max = 500, value = 0, step = 10)
+                min = 0, max = 500, value = 0, step = 10),
+    sliderInput("exit_velo",
+                "Select Minimum Exit Velocity",
+                min = 10, max = 120, value = 10, step = 5)
      ),
   mainPanel(
     plotOutput("spray_chart")
@@ -117,6 +120,9 @@ server <- function(input, output, session) {
     filtered_data <- filtered_data %>%
       filter(hit_distance_sc >= input$distance)
     
+    filtered_data <- filtered_data %>%
+      filter(launch_speed >= input$exit_velo)
+    
      filtered_data %>%
        mutate(events = case_when(events %in% c("single", "double", "triple", "home_run") ~ events, TRUE ~ "out")) 
   })
@@ -128,12 +134,12 @@ server <- function(input, output, session) {
   x_value = "hc_x",
   y_value = "-hc_y",
   fill_value = "events",
-  fill_palette = c("single" = "red",    
+  fill_palette = c("out" = "black",
+                   "single" = "red",    
   "double" = "blue",   
   "triple" = "yellow",  
-  "home_run" = "purple",   
-  "out" = "black" ),
-  fill_legend_title = "Outcomes",
+  "home_run" = "purple"),
+  fill_legend_title = "Batter Outcomes\nfor 2019-2023\nMLB Playoffs",
   density = FALSE,
   bin_size = 15,
   point_alpha = 0.75,
@@ -146,4 +152,4 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
-
+Add graph at bottom showing correlation between exit velo and hits/outs. Update sliders based on maximums for each player, order the outcomes differently
