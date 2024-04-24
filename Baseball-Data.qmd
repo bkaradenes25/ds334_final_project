@@ -79,7 +79,10 @@ ui <- fluidPage(
     selectInput("player_name", label = "Choose a Player",
                 choices = choices, selected = NULL),
     radioButtons("year", label = "Choose a Year",
-                 choices = "All", selected = "All")
+                 choices = "All", selected = "All"),
+    sliderInput("distance",
+                "Select Minimum Distance",
+                min = 0, max = 500, value = 0, step = 10)
      ),
   mainPanel(
     plotOutput("spray_chart")
@@ -109,7 +112,11 @@ server <- function(input, output, session) {
     if(input$year != "All") {
     filtered_data <- filtered_data %>%
       filter(year == input$year)
-  }
+    }
+    
+    filtered_data <- filtered_data %>%
+      filter(hit_distance_sc >= input$distance)
+    
      filtered_data %>%
        mutate(events = case_when(events %in% c("single", "double", "triple", "home_run") ~ events, TRUE ~ "out")) 
   })
