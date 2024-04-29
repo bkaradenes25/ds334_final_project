@@ -1,0 +1,70 @@
+---
+title: "Slides"
+author: "Brendan Karadenes"
+format: revealjs
+---
+
+```{r}
+#/ echo: false
+#/ output: false
+#/ warning: false
+library(baseballr)
+library(tidyverse)
+library(shiny)
+batted_balls <- read.csv("batted_balls.csv")
+batted_balls_correa <- batted_balls %>%
+  mutate(year = year(ymd(game_date))) %>%
+  filter(player_name == "Correa, Carlos")
+choices_correa <- batted_balls_correa |> distinct(player_name) |> pull(player_name)
+filtered_data_correa <- batted_balls_correa %>%
+       mutate(events = case_when(events %in% c("single", "double", "triple", "home_run") ~ events, TRUE ~ "out")) 
+```
+
+## Data
+
+* The data was scraped from the baseball savant website
+
+* The data contains 10,121 instances of batted balls for 409 players in the MLB playoffs from 2019-2023
+
+* Variables of interest include exit velocity, distance, coordinates of the batted ball, player name, and event type
+
+## Questions of Interest
+
+* How have spray charts changed over time for different players?
+
+* Is there a correlation between exit velocity and distance?
+
+## Spray Chart
+
+```{r}
+ggspraychart(
+  data = batted_balls_correa,
+  x_value = "hc_x",
+  y_value = "-hc_y",
+  fill_value = "events",
+  fill_palette = c("out" = "black",
+                   "single" = "red",    
+  "double" = "blue",   
+  "triple" = "yellow",  
+  "home_run" = "purple"),
+  fill_legend_title = "Batter Outcomes\nfor 2019-2023\nMLB Playoffs",
+  density = FALSE,
+  bin_size = 15,
+  point_alpha = 0.75,
+  point_size = 2,
+  frame = NULL
+) 
+```
+
+
+## Exit Velocity vs Distance Correlation
+
+```{r}
+ggplot(filtered_data_correa, aes(x = launch_speed, y = hit_distance_sc, color = events)) +
+      geom_point() +
+      labs(x = "Exit Velocity (mph)", y = "Distance (ft.)", title = paste("Exit Velocity vs Distance for Carlos Correa")) +
+      theme_minimal()
+```
+
+## Conclusions
+
