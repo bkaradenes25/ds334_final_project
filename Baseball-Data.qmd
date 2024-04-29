@@ -88,7 +88,8 @@ ui <- fluidPage(
                 min = 10, max = 120, value = 10, step = 5)
      ),
   mainPanel(
-    plotOutput("spray_chart")
+    plotOutput("spray_chart"),
+    plotOutput("exit_velo_distance")
   )
 )
 )
@@ -145,7 +146,16 @@ server <- function(input, output, session) {
   point_alpha = 0.75,
   point_size = 2,
   frame = NULL
-)
+) +
+      labs(title = paste("Spray Chart for", input$player_name))
+  })
+  
+  output$exit_velo_distance <- renderPlot({
+    filtered_data <- base_graph()
+    ggplot(filtered_data, aes(x = launch_speed, y = hit_distance_sc, color = events)) +
+      geom_point() +
+      labs(x = "Exit Velocity (mph)", y = "Distance (ft.)", title = paste("Exit Velocity vs Distance for", input$player_name)) +
+      theme_minimal()
   })
 }
 
