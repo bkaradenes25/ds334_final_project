@@ -1,5 +1,5 @@
 ---
-title: "Slides"
+title: "MLB Playoffs Batted Ball Data"
 author: "Brendan Karadenes"
 format: revealjs
 ---
@@ -26,15 +26,21 @@ filtered_data_correa <- batted_balls_correa %>%
 
 * The data contains 10,121 instances of batted balls for 409 players in the MLB playoffs from 2019-2023
 
-* Variables of interest include exit velocity, distance, coordinates of the batted ball, player name, and event type
+* Variables of interest include exit velocity, distance, coordinates of the batted ball, player name, launch angle, and event type
 
 ## Questions of Interest
 
-* How have spray charts changed over time for different players?
+* How have hitter tendencies changed over time for different players?
 
-* Is there a correlation between exit velocity and distance?
+* What is the ideal combination of exit velocity and launch angle?
 
 ## Spray Chart
+
+* Sample spray chart for player 
+
+* You can filter distance, exit velocity, players and year
+
+* Tells you whether player was a pull, opposite field, or all fields hitter that year
 
 ```{r}
 ggspraychart(
@@ -59,12 +65,20 @@ ggspraychart(
 
 ## Exit Velocity vs Distance Correlation
 
+* Sample scatterplot for player for balls in air
+
 ```{r}
-ggplot(filtered_data_correa, aes(x = launch_speed, y = hit_distance_sc, color = events)) +
+ggplot(filtered_data_correa, aes(x = launch_angle, y = launch_speed, color = events)) +
       geom_point() +
-      labs(x = "Exit Velocity (mph)", y = "Distance (ft.)", title = paste("Exit Velocity vs Distance for Carlos Correa")) +
+      labs(x = "Launch Angle (degrees)", y = "Exit Velocity (MPH)", title = "Exit Velocity vs Launch Angle for Carlos Correa") +
       theme_minimal()
 ```
 
 ## Conclusions
+
+* The ideal combination of exit velocity and launch angle is around 100MPH and 25 degrees
+
+* Differences in hitter tendencies vary from player to player
+
+
 

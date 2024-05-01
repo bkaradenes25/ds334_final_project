@@ -69,6 +69,18 @@ batted_balls <- batted_balls %>%
   mutate(year = year(ymd(game_date)))
 ```
 
+
+```{r}
+batted_balls <- batted_balls %>%
+  mutate(field = case_when(
+    hc_x <=85 ~ "Left_Field",
+    hc_x >= 170 ~ "Right_Field",
+    TRUE ~ "Center_Field"
+  ))
+```
+
+
+
 ## Creating the shiny app
 ```{r}
 # Ensuring only 1 name for each player
@@ -89,13 +101,16 @@ ui <- fluidPage(
      ),
   mainPanel(
     plotOutput("spray_chart"),
-    plotOutput("exit_velo_distance")
+    plotOutput("exit_velo_distance"),
+    textOutput("hitter_type")
   )
 )
 )
 
 server <- function(input, output, session) {
   # Updating the radio buttons so only years that player put a ball in play show up
+  Left_field <- 110
+  Right_field <- 150
   observeEvent(input$player_name,{
     years <- batted_balls %>%
       filter(player_name == input$player_name) %>%
@@ -124,12 +139,21 @@ server <- function(input, output, session) {
     filtered_data <- filtered_data %>%
       filter(launch_speed >= input$exit_velo)
     
-     filtered_data %>%
+     filtered_data <- filtered_data %>%
        mutate(events = case_when(events %in% c("single", "double", "triple", "home_run") ~ events, TRUE ~ "out")) 
+     filtered_data <- filtered_data %>%
+       mutate(hit_direction = case_when(
+         (stand == "R" & hc_x <= Left_field) | (stand == "L" & hc_x >= Right_field) ~ "Pull",
+         (stand == "L" & hc_x <= Left_field) | (stand == "R" & hc_x >= Right_field) ~ "Opposite",
+         TRUE ~"Center"
+       ))
+     filtered_data
   })
+  
   
   output$spray_chart <- renderPlot({
     filtered_data <- base_graph()
+    max_dist = max(filtered_data$hc_y, na.rm = TRUE)
     ggspraychart(
   data = filtered_data,
   x_value = "hc_x",
@@ -147,14 +171,41 @@ server <- function(input, output, session) {
   point_size = 2,
   frame = NULL
 ) +
-      labs(title = paste("Spray Chart for", input$player_name))
+      labs(title = paste("Spray Chart for", input$player_name)) +
+      geom_vline(xintercept = c(Left_field, Right_field), linetype = "dashed", color = "grey") 
+  })
+  
+  output$hitter_type <- renderText({
+    filtered_data <- base_graph()
+    print(head(filtered_data))
+  
+  # Check for specific conditions
+  print(summary(filtered_data$hc_x))
+  print(table(filtered_data$stand))
+  summary(filtered_data$hit_direction)
+
+  hit_direction_counts <- table(filtered_data$hit_direction)
+  print(hit_direction_counts)
+    hit_direction_counts <- table(filtered_data$hit_direction)
+    pull_percentage <- ifelse("Pull" %in% names(hit_direction_counts), hit_direction_counts["Pull"] / sum(hit_direction_counts) * 100, 0)
+  opposite_percentage <- ifelse("Opposite" %in% names(hit_direction_counts), hit_direction_counts["Opposite"] / sum(hit_direction_counts) * 100, 0)
+   print(pull_percentage)  # To check pull percentage
+  print(opposite_percentage)  #
+
+    if(pull_percentage >= 40) {
+      "Pull Hitter"
+    } else if (opposite_percentage >= 40) {
+      "Opposite Field Hitter"
+    } else{
+      "All Fields Hitter"
+    }
   })
   
   output$exit_velo_distance <- renderPlot({
     filtered_data <- base_graph()
-    ggplot(filtered_data, aes(x = launch_speed, y = hit_distance_sc, color = events)) +
+    ggplot(filtered_data, aes(x = launch_angle, y = launch_speed, color = events)) +
       geom_point() +
-      labs(x = "Exit Velocity (mph)", y = "Distance (ft.)", title = paste("Exit Velocity vs Distance for", input$player_name)) +
+      labs(x = "Launch Angle (degrees)", y = "Exit Velocity (mph)", title = paste("Launch Angle vs Exit Velocity for", input$player_name)) +
       theme_minimal()
   })
 }
