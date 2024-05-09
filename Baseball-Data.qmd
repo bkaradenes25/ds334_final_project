@@ -179,19 +179,15 @@ server <- function(input, output, session) {
     filtered_data <- base_graph()
     print(head(filtered_data))
   
-  # Check for specific conditions
-  print(summary(filtered_data$hc_x))
-  print(table(filtered_data$stand))
-  summary(filtered_data$hit_direction)
 
   hit_direction_counts <- table(filtered_data$hit_direction)
   print(hit_direction_counts)
     hit_direction_counts <- table(filtered_data$hit_direction)
     pull_percentage <- ifelse("Pull" %in% names(hit_direction_counts), hit_direction_counts["Pull"] / sum(hit_direction_counts) * 100, 0)
   opposite_percentage <- ifelse("Opposite" %in% names(hit_direction_counts), hit_direction_counts["Opposite"] / sum(hit_direction_counts) * 100, 0)
-   print(pull_percentage)  # To check pull percentage
-  print(opposite_percentage)  #
 
+
+ 
     if(pull_percentage >= 40) {
       "Pull Hitter"
     } else if (opposite_percentage >= 40) {
@@ -213,4 +209,4 @@ server <- function(input, output, session) {
 shinyApp(ui, server)
 ```
 
-Add graph at bottom showing correlation between exit velo and hits/outs. Update sliders based on maximums for each player, order the outcomes differently
+

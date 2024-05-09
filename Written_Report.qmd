@@ -1,0 +1,270 @@
+---
+title: "Written Report"
+author: "Brendan Karadenes"
+format:
+  html:
+    embed-resources: true
+---
+
+* Shiny App Script: https://github.com/bkaradenes25/ds334_final_project/blob/main/Baseball-Data.qmd
+* Project GitHub:https://github.com/bkaradenes25/ds334_final_project
+* Blog Link: bkaradenes25.github.io/ds334block/
+
+## Abstract
+
+For my final project I used data from the MLB playoffs from 2019 to 2023. I obtained the data using a web scraping function from the baseballr package that scrapes play-by-play data from the baseball savant website. After modifying the dataset to only include balls in play, the data includes 10,121 observations with 93 variables. I concluded that the ideal combination of launch angle and exit velocity was consistently around 100 MPH and 25 degrees for each player. Also, players had consistent spread on their balls in play over multiple years, despite increased analytics and shifts.
+
+## Introduction
+
+The variables of interest in the dataset include exit velocity, distance, coordinates of the batted ball (for plotting), player names, calendar date of each event (used to get the year) and launch angle. There are 409 players from 25 unique teams each with a different amount of experience in the postseason during the timeframe for each player. The goal of the project was to see how analytics affected players in the players over the past 5 years. With the increase in shifting, I wanted to see if players adjusted to beat the shift or kept their same approach. Also, I wanted to see what combinations of launch angle and exit velocity led to the best outcomes (i.e. homeruns, triples, doubles, and singles). 
+
+## Visualizations
+
+```{r, warning=FALSE, message=FALSE}
+library(baseballr)
+library(tidyverse)
+library(shiny)
+batted_balls <- read.csv("batted_balls.csv")
+batted_balls <- batted_balls %>%
+  mutate(year = year(ymd(game_date)))
+batted_balls <- batted_balls %>%
+  mutate(field = case_when(
+    hc_x <=85 ~ "Left_Field",
+    hc_x >= 170 ~ "Right_Field",
+    TRUE ~ "Center_Field"
+  ))
+choices <- batted_balls |> distinct(player_name) |> pull(player_name)
+Left_field <- 110
+Right_field <- 150
+filtered_data <- batted_balls %>%
+      filter(player_name == "Correa, Carlos") 
+  
+    
+     filtered_data <- filtered_data %>%
+       mutate(events = case_when(events %in% c("single", "double", "triple", "home_run") ~ events, TRUE ~ "out")) 
+     filtered_data <- filtered_data %>%
+       mutate(hit_direction = case_when(
+         (stand == "R" & hc_x <= Left_field) | (stand == "L" & hc_x >= Right_field) ~ "Pull",
+         (stand == "L" & hc_x <= Left_field) | (stand == "R" & hc_x >= Right_field) ~ "Opposite",
+         TRUE ~"Center"
+       ))
+     max_dist = max(filtered_data$hc_y, na.rm = TRUE)
+    ggspraychart(
+  data = filtered_data,
+  x_value = "hc_x",
+  y_value = "-hc_y",
+  fill_value = "events",
+  fill_palette = c("out" = "black",
+                   "single" = "red",    
+  "double" = "blue",   
+  "triple" = "yellow",  
+  "home_run" = "purple"),
+  fill_legend_title = "Batter Outcomes\nfor 2019-2023\nMLB Playoffs",
+  density = FALSE,
+  bin_size = 15,
+  point_alpha = 0.75,
+  point_size = 2,
+  frame = NULL
+) +
+      labs(title = paste("Spray Chart for Carlos Correa")) +
+      geom_vline(xintercept = c(Left_field, Right_field), linetype = "dashed", color = "grey")
+```
+
+The spray chart above includes all the batted balls for Carlos Correa during the playoffs from 2019 to 2023. The vertical dashed lines indicate the division of left, center, and right field used to indicate what type of hitter he is (pull, opposite field, or even spread). This player is interesting because he has a lot of data from the postseason, so it’s easier to see and draw conclusions about his trends. On the spray chart you can see that most of his balls in play are to the left side (his pull side) and most of his outs are in the infield (likely groundouts). 
+
+```{r, warning = FALSE, message=FALSE}
+filtered_data_19 <-
+  filtered_data %>%
+  filter(year == 2019)
+   ggspraychart(
+  data = filtered_data_19,
+  x_value = "hc_x",
+  y_value = "-hc_y",
+  fill_value = "events",
+  fill_palette = c("out" = "black",
+                   "single" = "red",    
+  "double" = "blue",   
+  "triple" = "yellow",  
+  "home_run" = "purple"),
+  fill_legend_title = "Batter Outcomes\nfor 2019-2023\nMLB Playoffs",
+  density = FALSE,
+  bin_size = 15,
+  point_alpha = 0.75,
+  point_size = 2,
+  frame = NULL
+) +
+      labs(title = "Spray Chart for Carlos Correa") +
+      geom_vline(xintercept = c(Left_field, Right_field), linetype = "dashed", color = "grey")
+```
+
+```{r, warning = FALSE, message=FALSE}
+filtered_data_21 <-
+  filtered_data %>%
+  filter(year == 2021)
+   ggspraychart(
+  data = filtered_data_21,
+  x_value = "hc_x",
+  y_value = "-hc_y",
+  fill_value = "events",
+  fill_palette = c("out" = "black",
+                   "single" = "red",    
+  "double" = "blue",   
+  "triple" = "yellow",  
+  "home_run" = "purple"),
+  fill_legend_title = "Batter Outcomes\nfor 2019-2023\nMLB Playoffs",
+  density = FALSE,
+  bin_size = 15,
+  point_alpha = 0.75,
+  point_size = 2,
+  frame = NULL
+) +
+      labs(title = "Spray Chart for Carlos Correa") +
+      geom_vline(xintercept = c(Left_field, Right_field), linetype = "dashed", color = "grey")
+```
+
+The first spray chart displays his batted balls in 2019, while the second chart displays his batted balls from 2021. As you can see, Correa followed the trend in baseball and maintained his approach to continue pulling the ball despite increasing shifts. The reason behind why the vast majority of his outs are on the ground to the left side may be because of teams seeing his trends and placing fielders in those positions. 
+
+```{r, warning = FALSE, message=FALSE}
+ggplot(filtered_data, aes(x = launch_angle, y = launch_speed, color = events)) +
+      geom_point() +
+      labs(x = "Launch Angle (degrees)", y = "Exit Velocity (mph)", title = "Launch Angle vs Exit Velocity for Carlos Correa") +
+      theme_minimal()
+```
+
+Above is an example of the launch angle vs exit velocity for all of Correa’s batted balls. As you can see, most of his homeruns met the 25-degree launch angle and 100 exit velocity mark and his doubles being around the same area of the graph. The outs and singles are more spread out and it’s difficult to make out any specific trends for those outcomes. However, most of the outs have lower exit velocities, which isn’t surprising because if you hit the ball softer it will go shorter and give more time for the fielders to react. What is surprising is that outs are spread out somewhat evenly along different launch angles, meaning there doesn’t seem to be an ideal angle given a non-specific exit velocity. Below the scatterplot displays what type of hitter the player is (on the shiny app), and as stated Correa is a pull hitter. A player with a pull percentage of 40 or over is considered a pull hitter, a player with an opposite field percentage of 40 or over is considered an opposite field hitter and the rest are considered all fields hitters.
+
+```{r, warning=FALSE, message=FALSE}
+filtered_data_JR <- batted_balls %>%
+      filter(player_name == "Reddick, Josh") 
+  
+    
+     filtered_data_JR <- filtered_data_JR %>%
+       mutate(events = case_when(events %in% c("single", "double", "triple", "home_run") ~ events, TRUE ~ "out")) 
+     filtered_data_JR <- filtered_data_JR %>%
+       mutate(hit_direction = case_when(
+         (stand == "R" & hc_x <= Left_field) | (stand == "L" & hc_x >= Right_field) ~ "Pull",
+         (stand == "L" & hc_x <= Left_field) | (stand == "R" & hc_x >= Right_field) ~ "Opposite",
+         TRUE ~"Center"
+       ))
+     max_dist = max(filtered_data_JR$hc_y, na.rm = TRUE)
+filtered_data_JR_19 <-
+  filtered_data_JR %>%
+  filter(year == 2019)
+   ggspraychart(
+  data = filtered_data_JR_19,
+  x_value = "hc_x",
+  y_value = "-hc_y",
+  fill_value = "events",
+  fill_palette = c("out" = "black",
+                   "single" = "red",    
+  "double" = "blue",   
+  "triple" = "yellow",  
+  "home_run" = "purple"),
+  fill_legend_title = "Batter Outcomes\nfor 2019-2023\nMLB Playoffs",
+  density = FALSE,
+  bin_size = 15,
+  point_alpha = 0.75,
+  point_size = 2,
+  frame = NULL
+) +
+      labs(title = "Spray Chart for Josh Reddick") +
+      geom_vline(xintercept = c(Left_field, Right_field), linetype = "dashed", color = "grey")
+```
+
+```{r}
+filtered_data_JR_20 <-
+  filtered_data_JR %>%
+  filter(year == 2020) 
+   ggspraychart(
+  data = filtered_data_JR_20,
+  x_value = "hc_x",
+  y_value = "-hc_y",
+  fill_value = "events",
+  fill_palette = c("out" = "black",
+                   "single" = "red",    
+  "double" = "blue",   
+  "triple" = "yellow",  
+  "home_run" = "purple"),
+  fill_legend_title = "Batter Outcomes\nfor 2019-2023\nMLB Playoffs",
+  density = FALSE,
+  bin_size = 15,
+  point_alpha = 0.75,
+  point_size = 2,
+  frame = NULL
+) +
+      labs(title = "Spray Chart for Josh Reddick") +
+      geom_vline(xintercept = c(Left_field, Right_field), linetype = "dashed", color = "grey")
+```
+
+Above displays the spray charts for Josh Reddick, the first one is from 2019 and the second one is from 2020. What makes these charts interesting is that as a left-handed hitter he went from being a pull hitter in 2019 to being an opposite field hitter in 2020. Left-handed hitters are in general expected to be more pull-oriented because of right field fences being closer than left field fences. As you can see, he hit a homerun down the right field line in 2019 and didn’t hit any in 2020. Considering that, I find it interesting that he switched up his approach, perhaps he made an adjustment due to increased shifting. 
+
+```{r}
+ggplot(filtered_data_JR_19, aes(x = launch_angle, y = launch_speed, color = events)) +
+      geom_point() +
+      labs(x = "Launch Angle (degrees)", y = "Exit Velocity (mph)", title = "Launch Angle vs Exit Velocity for Josh Reddick") +
+      theme_minimal()
+```
+
+```{r, warning=FALSE, message=FALSE}
+ggplot(filtered_data_JR_20, aes(x = launch_angle, y = launch_speed, color = events)) +
+      geom_point() +
+      labs(x = "Launch Angle (degrees)", y = "Exit Velocity (mph)", title = "Launch Angle vs Exit Velocity for Josh Reddick") +
+      theme_minimal()
+```
+
+The above spray charts display the launch angle vs exit velocity of all batted balls for Reddick. The first one is from 2019 and the second one is from 2020. What makes these scatterplots interesting is that due to his inconsistent launch angles he was rarely able to hit for extra bases, with just one home run over the two playoffs. Also, his exit velocities as a pull-hitter in 2019 were much more scattered than in 2020 where he was consistently in the 70-90MPH range. I also found it interesting that his hardest hit ball of about 110 MPH was an out, due to his launch angle on it being too low. That shows the importance of getting an ideal launch angle, even when you hit the ball hard. 
+
+```{r}
+filtered_data_GS <- batted_balls %>%
+      filter(player_name == "Stanton, Giancarlo") 
+    
+     filtered_data_GS <- filtered_data_GS %>%
+       mutate(events = case_when(events %in% c("single", "double", "triple", "home_run") ~ events, TRUE ~ "out")) 
+     filtered_data_GS <- filtered_data_GS %>%
+       mutate(hit_direction = case_when(
+         (stand == "R" & hc_x <= Left_field) | (stand == "L" & hc_x >= Right_field) ~ "Pull",
+         (stand == "L" & hc_x <= Left_field) | (stand == "R" & hc_x >= Right_field) ~ "Opposite",
+         TRUE ~"Center"
+       ))
+     max_dist = max(filtered_data_GS$hc_y, na.rm = TRUE)
+filtered_data_GS_EV <-
+  filtered_data_GS %>%
+  filter(launch_speed >= 100)
+
+ggplot(filtered_data_GS_EV, aes(x = launch_angle, y = launch_speed, color = events)) +
+      geom_point() +
+      labs(x = "Launch Angle (degrees)", y = "Exit Velocity (mph)", title = "Launch Angle vs Exit Velocity for Giancarlo Stanton") +
+      theme_minimal()
+```
+
+Above is a launch angle vs exit velocity scatterplot for Giancarlo Stanton, adjusted to only include events greater than or equal to 100MPH. What makes this visual interesting is that even though he hit the ball at high velocities there are still outs scattered in his chart. This shows the variability in baseball, that even if you hit it at a top velocity, you are not guaranteed a hit. Also, it shows the importance of launch angle, as balls hit in the 10-to-30-degree range were mostly home runs and doubles, while balls with negative exit velocities (hit on the ground) were almost all outs even though they were hit hard. 
+
+```{r}
+filtered_data_dist <- filtered_data %>%
+  filter(hit_distance_sc >= 300)
+ggplot(filtered_data_dist, aes(x = launch_angle, y = launch_speed, color = events)) +
+      geom_point() +
+      labs(x = "Launch Angle (degrees)", y = "Exit Velocity (mph)", title = "Launch Angle vs Exit Velocity for Carlos Correa") +
+      theme_minimal()
+```
+
+```{r}
+filtered_data_GS_dist <-
+  filtered_data_GS %>%
+  filter(hit_distance_sc >= 300)
+ggplot(filtered_data_GS_dist, aes(x = launch_angle, y = launch_speed, color = events)) +
+      geom_point() +
+      labs(x = "Launch Angle (degrees)", y = "Exit Velocity (mph)", title = "Launch Angle vs Exit Velocity for Giancarlo Stanton") +
+      theme_minimal()
+```
+
+Going back to Carlos Correa’s scatterplot (1st one), here is his exit velocity vs launch angle for batted balls at 300 ft. and above. I found this interesting because of the ranges of exit velocity and launch angle. Almost every ball was above 90 MPH and launch angles were mainly between 20 and 35 degrees. Comparing this to Stanton’s plot with the same filter, he had similar ranges with launch angles mainly between 15 and 35 and almost all balls being hit at 90MPH or above. As you can see, when not hit into an out, those combinations of exit velocity and launch angle for balls at 300 ft. or more lead to home runs and doubles.
+
+## Conclusion
+
+Although there were some limitations, the shiny app could be a good baseline for future work on this topic. The main limitation was that players had different amounts of balls in play and some had different years played, so it made it difficult to compare each player. Also, ggspraychart does not have as many features as a regular ggplot function, so I couldn’t make the spray chart as clean as I wanted to. If I had more time, I would compare what players did in the postseason to what they did in that same regular season. Also, I would try to get fielder positioning data to see exactly how shifting affected hitters.
+
+
+
+
+
